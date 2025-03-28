@@ -5,7 +5,16 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	_ "embed"
 )
+
+//go:generate ssh-keygen -t ed25519 -f id_ed25519 -N "" -q -C "generated@go"
+
+//go:embed id_ed25519.pub
+var sshPublicKey string
+
+//go:embed id_ed25519
+var sshPrivateKey string
 
 type resource struct {
 	Api struct {
@@ -32,6 +41,12 @@ type resource struct {
 var Resource resource
 
 func init() {
+	Resource.SSHKey.Public = sshPublicKey
+	Resource.SSHKey.Private = sshPrivateKey
+}
+
+
+func _init() {
 	val := reflect.ValueOf(&Resource).Elem()
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Field(i)
