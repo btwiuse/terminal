@@ -106,6 +106,24 @@ func (m model) AppsFormUpdate(msg tea.Msg) (model, tea.Cmd) {
 		m.state.apps.submitting = true
 
 		form := m.state.apps.form
+		if IsDemo() {
+			newApp := terminal.AppNewResponseData{
+				ID:     "app_demo_new",
+				Secret: "sec_demo_new_secret",
+			}
+			return m, func() tea.Msg {
+				return AppAddedMsg{
+					newApp: newApp,
+					apps: append(m.apps, terminal.App{
+						ID:          newApp.ID,
+						Name:        form.GetString("name"),
+						RedirectUri: form.GetString("redirectUri"),
+						Secret:      "sec_demo_****",
+					}),
+				}
+			}
+		}
+
 		return m, func() tea.Msg {
 			params := terminal.AppNewParams{
 				Name:        terminal.F(form.GetString("name")),
@@ -119,9 +137,6 @@ func (m model) AppsFormUpdate(msg tea.Msg) (model, tea.Cmd) {
 			if err != nil {
 				return err
 			}
-			// if m.output != nil {
-			// 	m.output.Copy(m.state.tokens.newToken.Token)
-			// }
 			return AppAddedMsg{
 				newApp: response.Data,
 				apps:   apps.Data,
@@ -164,6 +179,14 @@ func (m model) AppsUpdate(msg tea.Msg) (model, tea.Cmd) {
 		case "y":
 			if m.state.apps.deleting != nil {
 				m.state.apps.deleting = nil
+				if IsDemo() {
+					idx := m.state.apps.selected
+					m.apps = append(m.apps[:idx], m.apps[idx+1:]...)
+					if len(m.apps) == 0 {
+						m.state.account.focused = false
+					}
+					return m, nil
+				}
 				_, err := m.client.App.Delete(m.context, m.apps[m.state.apps.selected].ID)
 				if err != nil {
 					return m, func() tea.Msg { return err }

@@ -118,6 +118,16 @@ func (m model) UpdateCart(productVariantID string, offset int64) (model, tea.Cmd
 	m.cart.Subtotal = m.CalculateSubtotal()
 	m.state.cart.lastUpdateID = updateID
 
+	if IsDemo() {
+		updatedCart := mockCartAfterUpdate(m.cart)
+		return m, func() tea.Msg {
+			return CartUpdatedMsg{
+				updateID: updateID,
+				updated:  updatedCart,
+			}
+		}
+	}
+
 	return m, func() tea.Msg {
 		params := terminal.CartSetItemParams{
 			ProductVariantID: terminal.String(cartItem.ProductVariantID),

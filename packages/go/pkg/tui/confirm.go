@@ -82,6 +82,11 @@ func (m model) ConfirmUpdate(msg tea.Msg) (model, tea.Cmd) {
 			m.state.confirm.submitting = true
 			return m, func() tea.Msg {
 				if m.IsSubscribing() {
+					if IsDemo() {
+						return &terminal.SubscriptionNewResponse{
+							Data: terminal.SubscriptionNewResponseDataOk,
+						}
+					}
 					m.subscription.Quantity = terminal.Int(1)
 					params := terminal.SubscriptionNewParams{Subscription: m.subscription}
 					subscription, err := m.client.Subscription.New(m.context, params)
@@ -90,6 +95,28 @@ func (m model) ConfirmUpdate(msg tea.Msg) (model, tea.Cmd) {
 					}
 					return subscription
 				} else {
+					if IsDemo() {
+						mockOrder := terminal.Order{
+							ID:      "ord_demo_new",
+							Created: "2026-05-04",
+							Amount: terminal.OrderAmount{
+								Subtotal: m.cart.Amount.Subtotal,
+								Shipping: m.cart.Amount.Shipping,
+							},
+							Items:    []terminal.OrderItem{},
+							Shipping: terminal.OrderShipping{},
+							Tracking: terminal.OrderTracking{},
+						}
+						for _, item := range m.cart.Items {
+							mockOrder.Items = append(mockOrder.Items, terminal.OrderItem{
+								ID:               "itm_demo_" + item.ProductVariantID,
+								Amount:           item.Subtotal,
+								Quantity:         item.Quantity,
+								ProductVariantID: item.ProductVariantID,
+							})
+						}
+						return mockOrder
+					}
 					order, err := m.client.Cart.Convert(m.context)
 					if err != nil {
 						return err

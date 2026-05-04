@@ -267,7 +267,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.error = &VisibleError{
 			message: api.GetErrorMessage(msg),
 		}
-		if m.page == shopPage || m.page == cartPage {
+		if !IsDemo() && (m.page == shopPage || m.page == cartPage) {
 			cmds = append(cmds, func() tea.Msg {
 				response, err := m.client.Cart.Get(m.context)
 				if err != nil {

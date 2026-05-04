@@ -186,6 +186,9 @@ func (m model) SetShipping(shippingID string) error {
 	if m.IsSubscribing() {
 		return nil
 	}
+	if IsDemo() {
+		return nil
+	}
 
 	params := terminal.CartSetAddressParams{AddressID: terminal.F(shippingID)}
 	_, err := m.client.Cart.SetAddress(m.context, params)
@@ -256,6 +259,16 @@ func (m model) shippingListUpdate(msg tea.Msg) (model, tea.Cmd) {
 		case "y":
 			if m.state.shipping.deleting != nil {
 				m.state.shipping.deleting = nil
+				if IsDemo() {
+					deletedIndex := m.state.shipping.selected
+					updatedAddresses := append([]terminal.Address{}, m.addresses[:deletedIndex]...)
+					updatedAddresses = append(updatedAddresses, m.addresses[deletedIndex+1:]...)
+					m.addresses = updatedAddresses
+					if len(m.addresses) == 0 && m.page == accountPage {
+						m.state.account.focused = false
+					}
+					return m, nil
+				}
 				_, err := m.client.Address.Delete(m.context, m.addresses[m.state.shipping.selected].ID)
 				if err != nil {
 					return m, func() tea.Msg { return err }
@@ -359,6 +372,25 @@ func (m model) shippingFormUpdate(msg tea.Msg) (model, tea.Cmd) {
 				return VisibleError{message: "phone is required for international orders"}
 			}
 
+			if IsDemo() {
+				newID := "adr_demo_new"
+				newAddr := terminal.Address{
+					ID:       newID,
+					Name:     m.state.shipping.input.name,
+					Street1:  m.state.shipping.input.street1,
+					Street2:  m.state.shipping.input.street2,
+					City:     m.state.shipping.input.city,
+					Province: m.state.shipping.input.province,
+					Country:  m.state.shipping.input.country,
+					Zip:      m.state.shipping.input.zip,
+					Phone:    m.state.shipping.input.phone,
+				}
+				return ShippingAddressAddedMsg{
+					shippingID: newID,
+					addresses:  append(m.addresses, newAddr),
+				}
+			}
+
 			params := terminal.AddressNewParams{
 				Name:     terminal.String(m.state.shipping.input.name),
 				Street1:  terminal.String(m.state.shipping.input.street1),
@@ -406,11 +438,13 @@ func (m model) ShippingUpdate(msg tea.Msg) (model, tea.Cmd) {
 			m.subscription.AddressID = terminal.String(msg.shippingID)
 		} else {
 			m.cart.AddressID = msg.shippingID
-			cart, err := m.client.Cart.Get(m.context)
-			if err != nil {
-				return m, func() tea.Msg { return err }
+			if !IsDemo() {
+				cart, err := m.client.Cart.Get(m.context)
+				if err != nil {
+					return m, func() tea.Msg { return err }
+				}
+				m.cart = cart.Data
 			}
-			m.cart = cart.Data
 		}
 		return m.PaymentSwitch()
 	}

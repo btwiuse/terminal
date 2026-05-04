@@ -312,6 +312,9 @@ func (m model) SetCard(cardID string) error {
 	if m.IsSubscribing() {
 		return nil
 	}
+	if IsDemo() {
+		return nil
+	}
 	params := terminal.CartSetCardParams{CardID: terminal.F(cardID)}
 	_, err := m.client.Cart.SetCard(m.context, params)
 	return err
@@ -340,6 +343,11 @@ func (m model) choosePaymentMethod() (model, tea.Cmd) {
 		m.state.payment.generating = true
 		m.state.payment.view = paymentHttpsView
 		m.state.payment.viewport.KeyMap = viewport.DefaultKeyMap()
+		if IsDemo() {
+			return m, func() tea.Msg {
+				return PollPaymentInitMsg{paymentUrl: "https://terminal.shop/pay/demo"}
+			}
+		}
 		return m, func() tea.Msg {
 			resp, err := m.client.Card.Collect(m.context)
 			if err != nil {
@@ -381,6 +389,16 @@ func (m model) paymentListUpdate(msg tea.Msg) (model, tea.Cmd) {
 		case "y":
 			if m.state.payment.deleting != nil {
 				m.state.payment.deleting = nil
+				if IsDemo() {
+					deletedIndex := m.state.payment.selected
+					updatedCards := append([]terminal.Card{}, m.cards[:deletedIndex]...)
+					updatedCards = append(updatedCards, m.cards[deletedIndex+1:]...)
+					m.cards = updatedCards
+					if len(m.cards) == 0 && m.page == accountPage {
+						m.state.account.focused = false
+					}
+					return m, nil
+				}
 				_, err := m.client.Card.Delete(m.context, m.cards[m.state.payment.selected].ID)
 				if err != nil {
 					return m, func() tea.Msg { return err }
@@ -436,6 +454,22 @@ func (m model) paymentFormUpdate(msg tea.Msg) (model, tea.Cmd) {
 			return m, nil
 		}
 	case *stripe.Token:
+		if IsDemo() {
+			newCardID := "crd_demo_new"
+			newCard := terminal.Card{
+				ID:    newCardID,
+				Brand: "visa",
+				Last4: "0000",
+				Expiration: terminal.CardExpiration{
+					Month: 12,
+					Year:  2030,
+				},
+			}
+			m.cards = append(m.cards, newCard)
+			return m, func() tea.Msg {
+				return SelectedCardUpdatedMsg{cardID: newCardID}
+			}
+		}
 		params := terminal.CardNewParams{Token: terminal.F(msg.ID)}
 		response, err := m.client.Card.New(m.context, params)
 		if err != nil {
@@ -488,6 +522,23 @@ func (m model) paymentFormUpdate(msg tea.Msg) (model, tea.Cmd) {
 			zip:    form.GetString("zip"),
 		}
 
+		if IsDemo() {
+			newCardID := "crd_demo_form"
+			newCard := terminal.Card{
+				ID:    newCardID,
+				Brand: "visa",
+				Last4: "1234",
+				Expiration: terminal.CardExpiration{
+					Month: int64(12),
+					Year:  int64(2030),
+				},
+			}
+			m.cards = append(m.cards, newCard)
+			return m, func() tea.Msg {
+				return SelectedCardUpdatedMsg{cardID: newCardID}
+			}
+		}
+
 		return m, tea.Batch(func() tea.Msg {
 			result, err := api.StripeCreditCard(&stripe.CardParams{
 				Name:       stripe.String(m.user.User.Name),
@@ -532,6 +583,9 @@ func (m model) paymentHttpsUpdate(msg tea.Msg) (model, tea.Cmd) {
 			return PollPaymentStatusMsg{cardCount: len(m.cards)}
 		}
 	case PollPaymentStatusMsg:
+		if IsDemo() {
+			return m, nil
+		}
 		return m, tea.Tick(time.Second, func(t time.Time) tea.Msg {
 			cards, err := m.client.Card.List(m.context)
 			if err != nil {
