@@ -64,6 +64,15 @@ func (m model) ToggleRegion() (model, tea.Cmd) {
 	// Create new client with updated region
 	m.client = m.CreateSDKClient()
 
+	// In demo mode, reload from mock data without making API calls
+	if IsDemo() {
+		return m, func() tea.Msg {
+			data := MockViewData()
+			data.Region = newRegion
+			return data
+		}
+	}
+
 	// Return command to reload data
 	cmd := func() tea.Msg {
 		_, err := m.client.Cart.Clear(m.context)

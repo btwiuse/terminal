@@ -110,6 +110,16 @@ func (m model) SubscriptionsUpdate(msg tea.Msg) (model, tea.Cmd) {
 			case "y":
 				if m.state.subscriptions.deleting != nil {
 					m.state.subscriptions.deleting = nil
+					if IsDemo() {
+						idx := m.state.subscriptions.selected
+						m.subscriptions = append(m.subscriptions[:idx], m.subscriptions[idx+1:]...)
+						m.state.subscriptions.viewing = false
+						m.state.footer.commands = subscriptionCommands
+						if len(m.subscriptions) == 0 {
+							m.state.account.focused = false
+						}
+						return m, nil
+					}
 					_, err := m.client.Subscription.Delete(m.context, m.subscriptions[m.state.subscriptions.selected].ID)
 					if err != nil {
 						return m, func() tea.Msg { return err }
@@ -170,6 +180,14 @@ func (m model) SubscriptionsUpdate(msg tea.Msg) (model, tea.Cmd) {
 		case "y":
 			if m.state.subscriptions.deleting != nil {
 				m.state.subscriptions.deleting = nil
+				if IsDemo() {
+					idx := m.state.subscriptions.selected
+					m.subscriptions = append(m.subscriptions[:idx], m.subscriptions[idx+1:]...)
+					if len(m.subscriptions) == 0 {
+						m.state.account.focused = false
+					}
+					return m, nil
+				}
 				_, err := m.client.Subscription.Delete(m.context, m.subscriptions[m.state.subscriptions.selected].ID)
 				if err != nil {
 					return m, func() tea.Msg { return err }

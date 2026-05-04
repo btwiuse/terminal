@@ -66,6 +66,14 @@ func (m model) TokensUpdate(msg tea.Msg) (model, tea.Cmd) {
 		case "y":
 			if m.state.tokens.deleting != nil {
 				m.state.tokens.deleting = nil
+				if IsDemo() {
+					idx := m.state.tokens.selected
+					m.tokens = append(m.tokens[:idx], m.tokens[idx+1:]...)
+					if len(m.tokens) == 0 {
+						m.state.account.focused = false
+					}
+					return m, nil
+				}
 				_, err := m.client.Token.Delete(m.context, m.tokens[m.state.tokens.selected].ID)
 				if err != nil {
 					return m, func() tea.Msg { return err }
@@ -87,6 +95,22 @@ func (m model) TokensUpdate(msg tea.Msg) (model, tea.Cmd) {
 			return m, nil
 		case "enter":
 			if m.state.tokens.deleting == nil && m.state.tokens.selected == len(m.tokens) {
+				if IsDemo() {
+					newTok := terminal.TokenNewResponseData{
+						ID:    "tok_demo_new",
+						Token: "trm_demo_new_secret_token",
+					}
+					return m, func() tea.Msg {
+						return TokenAddedMsg{
+							newToken: newTok,
+							tokens: append(m.tokens, terminal.Token{
+								ID:      newTok.ID,
+								Token:   "trm_demo_new_****",
+								Created: "2026-05-04",
+							}),
+						}
+					}
+				}
 				return m, func() tea.Msg {
 					response, err := m.client.Token.New(m.context)
 					if err != nil {
@@ -96,9 +120,6 @@ func (m model) TokensUpdate(msg tea.Msg) (model, tea.Cmd) {
 					if err != nil {
 						return err
 					}
-					// if m.output != nil {
-					// 	m.output.Copy(m.state.tokens.newToken.Token)
-					// }
 					return TokenAddedMsg{
 						newToken: response.Data,
 						tokens:   tokens.Data,

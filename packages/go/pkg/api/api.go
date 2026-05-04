@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/stripe/stripe-go/v78"
@@ -16,7 +17,16 @@ import (
 	"github.com/stripe/stripe-go/v78/token"
 )
 
+// IsDemo reports whether the application is running in demo mode.
+// Demo mode is enabled by setting the DEMO environment variable to any non-empty value.
+func IsDemo() bool {
+	return os.Getenv("DEMO") != ""
+}
+
 func Init() {
+	if IsDemo() {
+		return
+	}
 	stripe.Key = resource.Resource.StripePublic.Value
 }
 
@@ -38,6 +48,12 @@ func GetErrorMessage(err error) string {
 }
 
 func FetchUserToken(publicKey string) (*UserCredentials, error) {
+	if IsDemo() {
+		return &UserCredentials{
+			AccessToken:  "demo-access-token",
+			RefreshToken: "demo-refresh-token",
+		}, nil
+	}
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
 	data.Set("client_id", "ssh")

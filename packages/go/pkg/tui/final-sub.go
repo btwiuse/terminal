@@ -108,6 +108,9 @@ func (m model) FinalSubUpdate(msg tea.Msg) (model, tea.Cmd) {
 
 			m.state.finalSub.submitting = true
 			return m, func() tea.Msg {
+				if IsDemo() {
+					return SubscriptionCompleteMsg{}
+				}
 				for _, item := range m.order.Items {
 					subscription := terminal.SubscriptionParam{
 						Quantity:         terminal.F(item.Quantity),

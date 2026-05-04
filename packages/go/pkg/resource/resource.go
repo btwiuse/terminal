@@ -54,7 +54,7 @@ func _init() {
 		envVarName := fmt.Sprintf("SST_RESOURCE_%s", typeField.Name)
 		envValue, exists := os.LookupEnv(envVarName)
 		if !exists {
-			panic(fmt.Sprintf("Environment variable %s is required", envVarName))
+			continue
 		}
 		if err := json.Unmarshal([]byte(envValue), field.Addr().Interface()); err != nil {
 			panic(err)

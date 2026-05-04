@@ -52,13 +52,19 @@ func (m model) LoadCmds() []tea.Cmd {
 		return DelayCompleteMsg{}
 	}))
 
-	cmds = append(cmds, func() tea.Msg {
-		response, err := m.client.View.Init(m.context)
-		if err != nil {
-			return err
-		}
-		return response.Data
-	})
+	if IsDemo() {
+		cmds = append(cmds, func() tea.Msg {
+			return MockViewData()
+		})
+	} else {
+		cmds = append(cmds, func() tea.Msg {
+			response, err := m.client.View.Init(m.context)
+			if err != nil {
+				return err
+			}
+			return response.Data
+		})
+	}
 
 	return cmds
 }
