@@ -120,10 +120,10 @@ func NewModel(
 	ctx = context.WithValue(ctx, "client_ip", clientIP)
 
 	result := model{
-		command:  command,
-		context:  ctx,
-		region:   nil,
-		page:     splashPage,
+		command: command,
+		context: ctx,
+		region:  nil,
+		page:    splashPage,
 		// output:      renderer.Output(),
 		fingerprint: fingerprint,
 		anonymous:   anonymous,
@@ -297,7 +297,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.widthContent = m.widthContainer - 2
-		m.heightContent = m.heightContainer - lipgloss.Height(m.HeaderView()) - lipgloss.Height(m.FooterView()) - lipgloss.Height(m.BreadcrumbsView()) - 2
+		m.heightContent = m.heightContainer - lipgloss.Height(m.HeaderView()) - lipgloss.Height(m.FooterView()) - lipgloss.Height(m.BreadcrumbsView())
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
@@ -401,16 +401,18 @@ func (m model) View() tea.View {
 		return v
 	}
 
-	if m.size == undersized {
-		return makeView(m.ResizeView())
-	}
-
 	switch m.page {
 	case splashPage:
+		// Always show splash, regardless of size (terminal dimensions may not
+		// be known yet on the very first render before WindowSizeMsg arrives).
 		return makeView(m.SplashView())
 	case menuPage:
 		return makeView(m.MenuView())
 	default:
+		if m.size == undersized {
+			return makeView(m.ResizeView())
+		}
+
 		header := m.HeaderView()
 		footer := m.FooterView()
 		breadcrumbs := m.BreadcrumbsView()
@@ -425,11 +427,7 @@ func (m model) View() tea.View {
 		// }
 		height -= lipgloss.Height(footer)
 
-		body := m.theme.Base().Width(m.widthContainer).Height(height).Render(content)
-		// bodyHeight := lipgloss.Height(body)
-		// if bodyHeight < height {
-		// 	body += lipgloss.NewStyle().Height(height - bodyHeight).Render(" ")
-		// }
+		body := m.theme.Base().Width(m.widthContainer).Height(height).MaxHeight(height).Render(content)
 
 		items := []string{}
 		items = append(items, header)
