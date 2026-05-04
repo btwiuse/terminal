@@ -18,18 +18,17 @@ import (
 	"syscall"
 
 	"github.com/google/uuid"
-	"github.com/muesli/termenv"
 	"github.com/terminaldotshop/terminal/go/pkg/resource"
 	"github.com/terminaldotshop/terminal/go/pkg/tui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/log"
 	"github.com/charmbracelet/ssh"
-	"github.com/charmbracelet/wish"
-	"github.com/charmbracelet/wish/activeterm"
-	"github.com/charmbracelet/wish/bubbletea"
-	"github.com/charmbracelet/wish/logging"
-	"github.com/charmbracelet/wish/recover"
+	"charm.land/wish/v2"
+	"charm.land/wish/v2/activeterm"
+	"charm.land/wish/v2/bubbletea"
+	"charm.land/wish/v2/logging"
+	"charm.land/wish/v2/recover"
 	gossh "golang.org/x/crypto/ssh"
 )
 
@@ -114,34 +113,11 @@ func main() {
 	slog.Info("Shutting down server")
 }
 
-type sshOutput struct {
-	ssh.Session
-	tty *os.File
-}
-
-func (s *sshOutput) Write(p []byte) (int, error) {
-	return s.Session.Write(p)
-}
-
-func (s *sshOutput) Read(p []byte) (int, error) {
-	return s.Session.Read(p)
-}
-
-func (s *sshOutput) Fd() uintptr {
-	return s.tty.Fd()
-}
-
 // You can wire any Bubble Tea model up to the middleware with a function that
 // handles the incoming ssh.Session. Here we just grab the terminal info and
 // pass it to the new model. You can also return tea.ProgramOptions (such as
 // tea.WithAltScreen) on a session by session basis.
 func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
-	pty, _, _ := s.Pty()
-	sessionBridge := &sshOutput{
-		Session: s,
-		tty:     pty.Slave,
-	}
-	renderer := bubbletea.MakeRenderer(sessionBridge)
 	fingerprint := s.Context().Value("fingerprint").(string)
 	anonymous := s.Context().Value("anonymous").(bool)
 	command := s.Command()
@@ -153,13 +129,9 @@ func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 	host, _, _ := net.SplitHostPort(clientAddr)
 	slog.Info("client connected", "ip", host)
 
-	if pty.Term == "xterm-ghostty" {
-		renderer.SetColorProfile(termenv.TrueColor)
-	}
-
-	model, err := tui.NewModel(renderer, fingerprint, anonymous, &host, command)
+	model, err := tui.NewModel(fingerprint, anonymous, &host, command)
 	if err != nil {
 		return nil, []tea.ProgramOption{}
 	}
-	return model, []tea.ProgramOption{tea.WithAltScreen()}
+	return model, []tea.ProgramOption{}
 }

@@ -1,13 +1,14 @@
 package theme
 
 import (
-	"github.com/charmbracelet/huh"
+	"charm.land/huh/v2"
 )
 
 // copy returns a copy of a TextInputStyles with all children styles copied.
 func copyTextStyles(t huh.TextInputStyles) huh.TextInputStyles {
 	return huh.TextInputStyles{
 		Cursor:      t.Cursor.Copy(),
+		CursorText:  t.CursorText.Copy(),
 		Placeholder: t.Placeholder.Copy(),
 		Prompt:      t.Prompt.Copy(),
 		Text:        t.Text.Copy(),

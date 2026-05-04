@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	terminal "github.com/terminaldotshop/terminal-sdk-go"
 )
 
@@ -169,13 +169,13 @@ func (m model) updateCartViewport() model {
 
 	if !m.state.cart.viewportReady {
 		// Initialize viewport for the first time
-		m.state.cart.viewport = viewport.New(m.widthContent, availableHeight)
+		m.state.cart.viewport = viewport.New(viewport.WithWidth(m.widthContent), viewport.WithHeight(availableHeight))
 		m.state.cart.viewport.KeyMap = viewport.KeyMap{}
 		m.state.cart.viewportReady = true
 	} else {
 		// Update existing viewport
-		m.state.cart.viewport.Width = m.widthContent
-		m.state.cart.viewport.Height = availableHeight
+		m.state.cart.viewport.SetWidth(m.widthContent)
+		m.state.cart.viewport.SetHeight(availableHeight)
 	}
 
 	return m
@@ -311,13 +311,13 @@ func (m model) CartView() string {
 		targetY := m.state.cart.selected * itemHeight
 
 		// If item is above viewport, scroll up
-		if targetY < m.state.cart.viewport.YOffset {
+		if targetY < m.state.cart.viewport.YOffset() {
 			m.state.cart.viewport.SetYOffset(targetY)
 		}
 
 		// If item is below viewport, scroll down
-		if targetY+itemHeight > m.state.cart.viewport.YOffset+m.state.cart.viewport.Height {
-			m.state.cart.viewport.SetYOffset(targetY - m.state.cart.viewport.Height + itemHeight)
+		if targetY+itemHeight > m.state.cart.viewport.YOffset()+m.state.cart.viewport.Height() {
+			m.state.cart.viewport.SetYOffset(targetY - m.state.cart.viewport.Height() + itemHeight)
 		}
 	}
 

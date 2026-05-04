@@ -3,9 +3,9 @@ package tui
 import (
 	"fmt"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	terminal "github.com/terminaldotshop/terminal-sdk-go"
 )
 
@@ -67,7 +67,7 @@ func (m model) OrdersUpdate(msg tea.Msg) (model, tea.Cmd) {
 				return m.previousOrder()
 			case "enter":
 				m.state.orders.viewing = true
-				m.state.orders.yOffset = m.state.account.detailViewport.YOffset
+				m.state.orders.yOffset = m.state.account.detailViewport.YOffset()
 				m.state.account.detailViewport.GotoTop()
 				m.state.footer.commands = []footerCommand{
 					{key: "esc", value: "back to orders"},

@@ -5,10 +5,10 @@ import (
 	"math"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	terminal "github.com/terminaldotshop/terminal-sdk-go"
 	"github.com/terminaldotshop/terminal/go/pkg/api"
 	"github.com/terminaldotshop/terminal/go/pkg/tui/theme"
@@ -65,7 +65,6 @@ type model struct {
 	order         *terminal.Order
 	cart          terminal.Cart
 	subscription  terminal.SubscriptionParam
-	renderer      *lipgloss.Renderer
 	// output          *termenv.Output
 	theme           theme.Theme
 	fingerprint     string
@@ -110,7 +109,6 @@ type children struct {
 }
 
 func NewModel(
-	renderer *lipgloss.Renderer,
 	fingerprint string,
 	anonymous bool,
 	clientIP *string,
@@ -126,11 +124,10 @@ func NewModel(
 		context:  ctx,
 		region:   nil,
 		page:     splashPage,
-		renderer: renderer,
 		// output:      renderer.Output(),
 		fingerprint: fingerprint,
 		anonymous:   anonymous,
-		theme:       theme.BasicTheme(renderer, nil),
+		theme:       theme.BasicTheme(nil),
 		faqs:        LoadFaqs(),
 		accountPages: []page{
 			ordersPage,
@@ -397,16 +394,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m model) View() string {
+func (m model) View() tea.View {
+	makeView := func(content string) tea.View {
+		v := tea.NewView(content)
+		v.AltScreen = true
+		return v
+	}
+
 	if m.size == undersized {
-		return m.ResizeView()
+		return makeView(m.ResizeView())
 	}
 
 	switch m.page {
 	case splashPage:
-		return m.SplashView()
+		return makeView(m.SplashView())
 	case menuPage:
-		return m.MenuView()
+		return makeView(m.MenuView())
 	default:
 		header := m.HeaderView()
 		footer := m.FooterView()
@@ -441,7 +444,7 @@ func (m model) View() string {
 			items...,
 		)
 
-		return m.renderer.Place(
+		return makeView(lipgloss.Place(
 			m.viewportWidth,
 			m.viewportHeight,
 			lipgloss.Center,
@@ -450,7 +453,7 @@ func (m model) View() string {
 				MaxWidth(m.widthContainer).
 				MaxHeight(m.heightContainer).
 				Render(child),
-		)
+		))
 	}
 }
 

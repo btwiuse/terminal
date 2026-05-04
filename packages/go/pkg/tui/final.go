@@ -3,9 +3,9 @@ package tui
 import (
 	"fmt"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	terminal "github.com/terminaldotshop/terminal-sdk-go"
 )
 
@@ -24,13 +24,13 @@ func (m model) updateFinalViewport() model {
 
 	if !m.state.final.viewportReady {
 		// Initialize viewport for the first time
-		m.state.final.viewport = viewport.New(m.widthContent, availableHeight)
+		m.state.final.viewport = viewport.New(viewport.WithWidth(m.widthContent), viewport.WithHeight(availableHeight))
 		m.state.final.viewport.KeyMap = viewport.DefaultKeyMap()
 		m.state.final.viewportReady = true
 	} else {
 		// Update existing viewport
-		m.state.final.viewport.Width = m.widthContent
-		m.state.final.viewport.Height = availableHeight
+		m.state.final.viewport.SetWidth(m.widthContent)
+		m.state.final.viewport.SetHeight(availableHeight)
 	}
 
 	return m

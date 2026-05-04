@@ -3,9 +3,9 @@ package tui
 import (
 	"fmt"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	terminal "github.com/terminaldotshop/terminal-sdk-go"
 )
 
@@ -54,7 +54,7 @@ func (m model) SubscriptionManageSwitch(id string) (model, tea.Cmd) {
 
 	m.state.subscriptions.deleting = nil
 	m.state.subscriptions.viewing = true
-	m.state.subscriptions.yOffset = m.state.account.detailViewport.YOffset
+	m.state.subscriptions.yOffset = m.state.account.detailViewport.YOffset()
 	m = m.updateAccountViewports()
 	m.state.account.detailViewport.GotoTop()
 	m.state.account.detailViewport.KeyMap = viewport.DefaultKeyMap()
@@ -157,7 +157,7 @@ func (m model) SubscriptionsUpdate(msg tea.Msg) (model, tea.Cmd) {
 		case "enter":
 			if m.state.subscriptions.deleting == nil && len(m.subscriptions) > 0 {
 				m.state.subscriptions.viewing = true
-				m.state.subscriptions.yOffset = m.state.account.detailViewport.YOffset
+				m.state.subscriptions.yOffset = m.state.account.detailViewport.YOffset()
 				m.state.account.detailViewport.GotoTop()
 				m.state.footer.commands = subscriptionDetailCommands
 			}

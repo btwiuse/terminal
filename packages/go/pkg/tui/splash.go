@@ -3,8 +3,8 @@ package tui
 import (
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	terminal "github.com/terminaldotshop/terminal-sdk-go"
 	"github.com/terminaldotshop/terminal-sdk-go/option"
 	"github.com/terminaldotshop/terminal/go/pkg/api"
@@ -86,11 +86,7 @@ func (m model) SplashInit() tea.Cmd {
 		}
 	}
 
-	disableMouseCmd := func() tea.Msg {
-		return tea.DisableMouse()
-	}
-
-	return tea.Batch(m.CursorInit(), disableMouseCmd, cmd)
+	return tea.Batch(m.CursorInit(), cmd)
 }
 
 func (m model) SplashUpdate(msg tea.Msg) (model, tea.Cmd) {

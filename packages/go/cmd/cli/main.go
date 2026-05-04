@@ -5,8 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
 	"github.com/terminaldotshop/terminal/go/pkg/tui"
 )
 
@@ -18,11 +17,11 @@ func main() {
 	defer log.Close()
 	slog.SetDefault(slog.New(slog.NewTextHandler(log, &slog.HandlerOptions{})))
 
-	model, err := tui.NewModel(lipgloss.DefaultRenderer(), "fingerprint", false, nil, []string{})
+	model, err := tui.NewModel("fingerprint", false, nil, []string{})
 	if err != nil {
 		panic(err)
 	}
-	if _, err := tea.NewProgram(model, tea.WithAltScreen()).Run(); err != nil {
+	if _, err := tea.NewProgram(model).Run(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)
 	}

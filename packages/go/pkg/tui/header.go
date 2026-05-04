@@ -3,9 +3,9 @@ package tui
 import (
 	"fmt"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+	"charm.land/lipgloss/v2/table"
 )
 
 func (m model) HeaderUpdate(msg tea.Msg) (model, tea.Cmd) {
@@ -113,7 +113,7 @@ func (m model) HeaderView() string {
 
 	var table = table.New().
 		Border(lipgloss.NormalBorder()).
-		BorderStyle(m.renderer.NewStyle().Foreground(m.theme.Border())).
+		BorderStyle(lipgloss.NewStyle().Foreground(m.theme.Border())).
 		Row(tabs...).
 		Width(m.widthContent).
 		StyleFunc(func(row, col int) lipgloss.Style {

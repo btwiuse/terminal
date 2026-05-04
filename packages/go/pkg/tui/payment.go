@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/stripe/stripe-go/v78"
 	terminal "github.com/terminaldotshop/terminal-sdk-go"
 	"github.com/terminaldotshop/terminal/go/pkg/api"
@@ -88,13 +88,13 @@ func (m model) updatePaymentViewport() model {
 
 	if !m.state.payment.viewportReady {
 		// Initialize viewport for the first time
-		m.state.payment.viewport = viewport.New(m.widthContent, availableHeight)
+		m.state.payment.viewport = viewport.New(viewport.WithWidth(m.widthContent), viewport.WithHeight(availableHeight))
 		m.state.payment.viewport.KeyMap = viewport.KeyMap{}
 		m.state.payment.viewportReady = true
 	} else {
 		// Update existing viewport
-		m.state.payment.viewport.Width = m.widthContent
-		m.state.payment.viewport.Height = availableHeight
+		m.state.payment.viewport.SetWidth(m.widthContent)
+		m.state.payment.viewport.SetHeight(availableHeight)
 	}
 
 	return m
@@ -150,14 +150,14 @@ func (m model) ensurePaymentFocusedInputIsVisible() model {
 		}
 
 		// If field is above viewport, scroll up
-		if targetY < m.state.payment.viewport.YOffset {
+		if targetY < m.state.payment.viewport.YOffset() {
 			m.state.payment.viewport.SetYOffset(targetY)
 		}
 
 		// If field is below viewport, scroll down
-		viewportBottom := m.state.payment.viewport.YOffset + m.state.payment.viewport.Height
+		viewportBottom := m.state.payment.viewport.YOffset() + m.state.payment.viewport.Height()
 		if targetY+inputHeight > viewportBottom {
-			m.state.payment.viewport.SetYOffset(targetY + inputHeight - m.state.payment.viewport.Height)
+			m.state.payment.viewport.SetYOffset(targetY + inputHeight - m.state.payment.viewport.Height())
 		}
 	}
 
@@ -631,13 +631,13 @@ func (m model) PaymentUpdate(msg tea.Msg) (model, tea.Cmd) {
 			targetY := m2.state.payment.selected * itemHeight
 
 			// If item is above viewport, scroll up
-			if targetY < m2.state.payment.viewport.YOffset {
+			if targetY < m2.state.payment.viewport.YOffset() {
 				m2.state.payment.viewport.SetYOffset(targetY)
 			}
 
 			// If item is below viewport, scroll down
-			if targetY+itemHeight > m2.state.payment.viewport.YOffset+m2.state.payment.viewport.Height {
-				m2.state.payment.viewport.SetYOffset(targetY - m2.state.payment.viewport.Height + itemHeight + 1)
+			if targetY+itemHeight > m2.state.payment.viewport.YOffset()+m2.state.payment.viewport.Height() {
+				m2.state.payment.viewport.SetYOffset(targetY - m2.state.payment.viewport.Height() + itemHeight + 1)
 			}
 
 			// If last item, scroll to bottom

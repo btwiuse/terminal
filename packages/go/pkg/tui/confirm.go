@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	terminal "github.com/terminaldotshop/terminal-sdk-go"
 )
 
@@ -26,13 +26,13 @@ func (m model) updateConfirmViewport() model {
 
 	if !m.state.confirm.viewportReady {
 		// Initialize viewport for the first time
-		m.state.confirm.viewport = viewport.New(m.widthContent, availableHeight)
+		m.state.confirm.viewport = viewport.New(viewport.WithWidth(m.widthContent), viewport.WithHeight(availableHeight))
 		m.state.confirm.viewport.KeyMap = viewport.DefaultKeyMap()
 		m.state.confirm.viewportReady = true
 	} else {
 		// Update existing viewport
-		m.state.confirm.viewport.Width = m.widthContent
-		m.state.confirm.viewport.Height = availableHeight
+		m.state.confirm.viewport.SetWidth(m.widthContent)
+		m.state.confirm.viewport.SetHeight(availableHeight)
 	}
 
 	return m

@@ -1,10 +1,10 @@
 package tui
 
 import (
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
+	"charm.land/lipgloss/v2"
 	terminal "github.com/terminaldotshop/terminal-sdk-go"
 	"github.com/terminaldotshop/terminal/go/pkg/tui/validate"
 )
@@ -57,13 +57,13 @@ func (m model) updateShippingViewport() model {
 
 	if !m.state.shipping.viewportReady {
 		// Initialize viewport for the first time
-		m.state.shipping.viewport = viewport.New(m.widthContent, availableHeight)
+		m.state.shipping.viewport = viewport.New(viewport.WithWidth(m.widthContent), viewport.WithHeight(availableHeight))
 		m.state.shipping.viewport.KeyMap = viewport.KeyMap{}
 		m.state.shipping.viewportReady = true
 	} else {
 		// Update existing viewport
-		m.state.shipping.viewport.Width = m.widthContent
-		m.state.shipping.viewport.Height = availableHeight
+		m.state.shipping.viewport.SetWidth(m.widthContent)
+		m.state.shipping.viewport.SetHeight(availableHeight)
 	}
 
 	return m
@@ -117,14 +117,14 @@ func (m model) ensureShippingFocusedInputIsVisible() model {
 		}
 
 		// If field is above viewport, scroll up
-		if targetY < m.state.shipping.viewport.YOffset {
+		if targetY < m.state.shipping.viewport.YOffset() {
 			m.state.shipping.viewport.SetYOffset(targetY)
 		}
 
 		// If field is below viewport, scroll down
-		viewportBottom := m.state.shipping.viewport.YOffset + m.state.shipping.viewport.Height
+		viewportBottom := m.state.shipping.viewport.YOffset() + m.state.shipping.viewport.Height()
 		if targetY+inputHeight > viewportBottom {
-			m.state.shipping.viewport.SetYOffset(targetY + inputHeight - m.state.shipping.viewport.Height)
+			m.state.shipping.viewport.SetYOffset(targetY + inputHeight - m.state.shipping.viewport.Height())
 		}
 	}
 
@@ -430,13 +430,13 @@ func (m model) ShippingUpdate(msg tea.Msg) (model, tea.Cmd) {
 			targetY := m.state.shipping.selected * itemHeight
 
 			// If item is above viewport, scroll up
-			if targetY < m.state.shipping.viewport.YOffset {
+			if targetY < m.state.shipping.viewport.YOffset() {
 				m.state.shipping.viewport.SetYOffset(targetY)
 			}
 
 			// If item is below viewport, scroll down
-			if targetY+itemHeight > m.state.shipping.viewport.YOffset+m.state.shipping.viewport.Height {
-				m.state.shipping.viewport.SetYOffset(targetY - m.state.shipping.viewport.Height + itemHeight + 1)
+			if targetY+itemHeight > m.state.shipping.viewport.YOffset()+m.state.shipping.viewport.Height() {
+				m.state.shipping.viewport.SetYOffset(targetY - m.state.shipping.viewport.Height() + itemHeight + 1)
 			}
 
 			// If last item, scroll to bottom

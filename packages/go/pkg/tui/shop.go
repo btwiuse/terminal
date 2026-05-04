@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	terminal "github.com/terminaldotshop/terminal-sdk-go"
 	"github.com/terminaldotshop/terminal/go/pkg/tui/theme"
 )
@@ -72,20 +72,20 @@ func (m model) updateShopViewports() model {
 
 	if !m.state.shop.viewportsReady {
 		// Initialize viewports for the first time
-		m.state.shop.menuViewport = viewport.New(menuWidth, availableHeight)
+		m.state.shop.menuViewport = viewport.New(viewport.WithWidth(menuWidth), viewport.WithHeight(availableHeight))
 		m.state.shop.menuViewport.KeyMap = viewport.KeyMap{}
 
-		m.state.shop.detailViewport = viewport.New(detailWidth, availableHeight)
+		m.state.shop.detailViewport = viewport.New(viewport.WithWidth(detailWidth), viewport.WithHeight(availableHeight))
 		m.state.shop.detailViewport.KeyMap = modifiedKeyMap
 
 		m.state.shop.viewportsReady = true
 	} else {
 		// Update existing viewports
-		m.state.shop.menuViewport.Width = menuWidth
-		m.state.shop.menuViewport.Height = availableHeight
+		m.state.shop.menuViewport.SetWidth(menuWidth)
+		m.state.shop.menuViewport.SetHeight(availableHeight)
 
-		m.state.shop.detailViewport.Width = detailWidth
-		m.state.shop.detailViewport.Height = availableHeight
+		m.state.shop.detailViewport.SetWidth(detailWidth)
+		m.state.shop.detailViewport.SetHeight(availableHeight)
 	}
 
 	return m
@@ -260,7 +260,7 @@ func (m model) UpdateSelected(previous bool) (model, tea.Cmd) {
 		}
 
 		// Keep selected item in view
-		m.state.shop.menuViewport.SetYOffset(targetY - (m.state.shop.menuViewport.Height / 2))
+		m.state.shop.menuViewport.SetYOffset(targetY - (m.state.shop.menuViewport.Height() / 2))
 
 		// Reset detail viewport to top when selection changes
 		m.state.shop.detailViewport.GotoTop()
@@ -524,7 +524,7 @@ func (m model) UpdateSelectedTheme() model {
 	// Handle empty products case
 	if len(m.products) == 0 {
 		// Use default theme when no products
-		m.theme = theme.BasicTheme(m.renderer, nil)
+		m.theme = theme.BasicTheme(nil)
 		return m
 	}
 
@@ -533,9 +533,9 @@ func (m model) UpdateSelectedTheme() model {
 	highlight = product.Tags.Color
 
 	if highlight != "" {
-		m.theme = theme.BasicTheme(m.renderer, &highlight)
+		m.theme = theme.BasicTheme(&highlight)
 	} else {
-		m.theme = theme.BasicTheme(m.renderer, nil)
+		m.theme = theme.BasicTheme(nil)
 	}
 
 	return m

@@ -1,35 +1,33 @@
 package theme
 
 import (
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
+	"image/color"
+
+	"charm.land/bubbles/v2/help"
+	"charm.land/huh/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type Theme struct {
-	renderer *lipgloss.Renderer
-
-	border     lipgloss.TerminalColor
-	background lipgloss.TerminalColor
-	highlight  lipgloss.TerminalColor
-	brand      lipgloss.TerminalColor
-	error      lipgloss.TerminalColor
-	body       lipgloss.TerminalColor
-	accent     lipgloss.TerminalColor
+	border     color.Color
+	background color.Color
+	highlight  color.Color
+	brand      color.Color
+	error      color.Color
+	body       color.Color
+	accent     color.Color
 
 	base lipgloss.Style
-	form *huh.Theme
+	form huh.Theme
 }
 
-func BasicTheme(renderer *lipgloss.Renderer, highlight *string) Theme {
-	base := Theme{
-		renderer: renderer,
-	}
+func BasicTheme(highlight *string) Theme {
+	base := Theme{}
 
-	base.background = lipgloss.AdaptiveColor{Dark: "#000000", Light: "#FBFCFD"}
-	base.border = lipgloss.AdaptiveColor{Dark: "#3A3F42", Light: "#D7DBDF"}
-	base.body = lipgloss.AdaptiveColor{Dark: "#889096", Light: "#889096"}
-	base.accent = lipgloss.AdaptiveColor{Dark: "#FFFFFF", Light: "#11181C"}
+	base.background = lipgloss.Color("#000000")
+	base.border = lipgloss.Color("#3A3F42")
+	base.body = lipgloss.Color("#889096")
+	base.accent = lipgloss.Color("#FFFFFF")
 	base.brand = lipgloss.Color("#FF5C00")
 	if highlight != nil {
 		base.highlight = lipgloss.Color(*highlight)
@@ -38,59 +36,61 @@ func BasicTheme(renderer *lipgloss.Renderer, highlight *string) Theme {
 	}
 	base.error = lipgloss.Color("203")
 
-	base.base = renderer.NewStyle().Foreground(base.body)
+	base.base = lipgloss.NewStyle().Foreground(base.body)
 	base.form = HuhTheme(base)
 
 	return base
 }
 
-func HuhTheme(theme Theme) *huh.Theme {
-	var t huh.Theme
+func HuhTheme(theme Theme) huh.ThemeFunc {
+	return func(_ bool) *huh.Styles {
+		var t huh.Styles
 
-	t.FieldSeparator = theme.renderer.NewStyle().SetString("\n\n")
+		t.FieldSeparator = lipgloss.NewStyle().SetString("\n\n")
 
-	f := &t.Focused
-	f.Base = theme.renderer.NewStyle().
-		PaddingLeft(1).
-		BorderStyle(lipgloss.ThickBorder()).
-		BorderLeft(true).
-		BorderForeground(theme.accent)
-	f.Title = theme.renderer.NewStyle().Foreground(theme.body)
-	f.Description = theme.renderer.NewStyle().Foreground(theme.body)
-	f.TextInput.Cursor = theme.renderer.NewStyle().Foreground(theme.brand)
-	f.TextInput.Placeholder = theme.renderer.NewStyle().Foreground(theme.body)
-	f.TextInput.Prompt = theme.renderer.NewStyle().Foreground(theme.accent)
-	f.TextInput.Text = theme.renderer.NewStyle().Foreground(theme.accent)
-	f.ErrorIndicator = theme.renderer.NewStyle().Foreground(theme.error)
-	f.ErrorMessage = theme.renderer.NewStyle().Foreground(theme.error)
-	t.Help = help.New().Styles
+		f := &t.Focused
+		f.Base = lipgloss.NewStyle().
+			PaddingLeft(1).
+			BorderStyle(lipgloss.ThickBorder()).
+			BorderLeft(true).
+			BorderForeground(theme.accent)
+		f.Title = lipgloss.NewStyle().Foreground(theme.body)
+		f.Description = lipgloss.NewStyle().Foreground(theme.body)
+		f.TextInput.Cursor = lipgloss.NewStyle().Foreground(theme.brand)
+		f.TextInput.Placeholder = lipgloss.NewStyle().Foreground(theme.body)
+		f.TextInput.Prompt = lipgloss.NewStyle().Foreground(theme.accent)
+		f.TextInput.Text = lipgloss.NewStyle().Foreground(theme.accent)
+		f.ErrorIndicator = lipgloss.NewStyle().Foreground(theme.error)
+		f.ErrorMessage = lipgloss.NewStyle().Foreground(theme.error)
+		t.Help = help.New().Styles
 
-	t.Blurred = copyFieldStyles(*f)
-	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
-	t.Blurred.Title.Foreground(theme.body)
+		t.Blurred = copyFieldStyles(*f)
+		t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+		t.Blurred.Title = t.Blurred.Title.Foreground(theme.body)
 
-	// TODO: add other huh form/input styles as needed
+		// TODO: add other huh form/input styles as needed
 
-	return &t
+		return &t
+	}
 }
 
-func (b Theme) Body() lipgloss.TerminalColor {
+func (b Theme) Body() color.Color {
 	return b.body
 }
 
-func (b Theme) Highlight() lipgloss.TerminalColor {
+func (b Theme) Highlight() color.Color {
 	return b.highlight
 }
 
-func (b Theme) Brand() lipgloss.TerminalColor {
+func (b Theme) Brand() color.Color {
 	return b.brand
 }
 
-func (b Theme) Background() lipgloss.TerminalColor {
+func (b Theme) Background() color.Color {
 	return b.background
 }
 
-func (b Theme) Accent() lipgloss.TerminalColor {
+func (b Theme) Accent() color.Color {
 	return b.accent
 }
 
@@ -122,10 +122,10 @@ func (b Theme) PanelError() lipgloss.Style {
 	return b.Base().Background(b.error).Foreground(b.accent)
 }
 
-func (b Theme) Form() *huh.Theme {
+func (b Theme) Form() huh.Theme {
 	return b.form
 }
 
-func (b Theme) Border() lipgloss.TerminalColor {
+func (b Theme) Border() color.Color {
 	return b.border
 }

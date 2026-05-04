@@ -3,9 +3,9 @@ package tui
 import (
 	"strings"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type accountState struct {
@@ -50,20 +50,20 @@ func (m model) updateAccountViewports() model {
 
 	if !m.state.account.viewportsReady {
 		// Initialize viewports for the first time
-		m.state.account.menuViewport = viewport.New(menuWidth, availableHeight)
+		m.state.account.menuViewport = viewport.New(viewport.WithWidth(menuWidth), viewport.WithHeight(availableHeight))
 		m.state.account.menuViewport.KeyMap = viewport.KeyMap{}
 
-		m.state.account.detailViewport = viewport.New(detailWidth, availableHeight)
+		m.state.account.detailViewport = viewport.New(viewport.WithWidth(detailWidth), viewport.WithHeight(availableHeight))
 		m.state.account.detailViewport.KeyMap = modifiedKeyMap
 
 		m.state.account.viewportsReady = true
 	} else {
 		// Update existing viewports
-		m.state.account.menuViewport.Width = menuWidth
-		m.state.account.menuViewport.Height = availableHeight
+		m.state.account.menuViewport.SetWidth(menuWidth)
+		m.state.account.menuViewport.SetHeight(availableHeight)
 
-		m.state.account.detailViewport.Width = detailWidth
-		m.state.account.detailViewport.Height = availableHeight
+		m.state.account.detailViewport.SetWidth(detailWidth)
+		m.state.account.detailViewport.SetHeight(availableHeight)
 	}
 
 	return m
@@ -434,8 +434,8 @@ func (m model) scrollToAccountDetailItem(model model, accountPage page) model {
 	targetY := (selectedIndex * itemHeight) + 2
 
 	// Calculate offset to position item in the visible area
-	viewportHeight := model.state.account.detailViewport.Height
-	currentOffset := model.state.account.detailViewport.YOffset
+	viewportHeight := model.state.account.detailViewport.Height()
+	currentOffset := model.state.account.detailViewport.YOffset()
 
 	// If item is above viewport, scroll up to show it
 	if targetY < currentOffset {
@@ -481,7 +481,7 @@ func (m model) UpdateSelectedAccountPage(previous bool) (model, tea.Cmd) {
 		targetY := (m.state.account.selected + 1) * itemHeight
 
 		// Keep selected item in view
-		m.state.account.menuViewport.SetYOffset(targetY - (m.state.account.menuViewport.Height / 2))
+		m.state.account.menuViewport.SetYOffset(targetY - (m.state.account.menuViewport.Height() / 2))
 
 		// Reset detail viewport to top when selection changes
 		m.state.account.detailViewport.GotoTop()

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	terminal "github.com/terminaldotshop/terminal-sdk-go"
 )
 
@@ -30,13 +30,13 @@ func (m model) updateFinalSubViewport() model {
 
 	if !m.state.finalSub.viewportReady {
 		// Initialize viewport for the first time
-		m.state.finalSub.viewport = viewport.New(m.widthContent, availableHeight)
+		m.state.finalSub.viewport = viewport.New(viewport.WithWidth(m.widthContent), viewport.WithHeight(availableHeight))
 		m.state.finalSub.viewport.KeyMap = viewport.KeyMap{}
 		m.state.finalSub.viewportReady = true
 	} else {
 		// Update existing viewport
-		m.state.finalSub.viewport.Width = m.widthContent
-		m.state.finalSub.viewport.Height = availableHeight
+		m.state.finalSub.viewport.SetWidth(m.widthContent)
+		m.state.finalSub.viewport.SetHeight(availableHeight)
 	}
 
 	return m
