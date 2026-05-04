@@ -22,7 +22,7 @@ import (
 	"github.com/terminaldotshop/terminal/go/pkg/tui"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/charmbracelet/ssh"
 	"charm.land/wish/v2"
 	"charm.land/wish/v2/activeterm"
